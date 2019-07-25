@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import pretty_midi as pm
-# import os
 import peta_testing
 import algorithm
 
@@ -33,9 +32,10 @@ def pedal_trans(data, E, s1m, s1M, s2m, s2M, fn_out, label):
 
 def Perf_Trans(filename, csv_file, E, s1m, s1M, s2m, s2M, fn_out, label):
     original_data = pm.PrettyMIDI(filename)
-    after_extend = note_extension(original_data, s1m)
-    after_trans = note_trans(after_extend, csv_file)
-    after_PETA = pedal_trans(after_trans, E, s1m, s1M, s2m, s2M, fn_out, label)
+    # after_extend = note_extension(original_data, s1m)
+    # after_trans = note_trans(after_extend, csv_file)
+    # after_PETA = pedal_trans(after_trans, E, s1m, s1M, s2m, s2M, fn_out, label)
+    after_PETA = pedal_trans(original_data.instruments[0], E, s1m, s1M, s2m, s2M, fn_out, label)
 
     original_data.instruments[0] = after_PETA
     original_data.write(fn_out)
@@ -69,12 +69,15 @@ def main():
 
     path1 = 'D:\\Academic_work\\00PerfTransfer\\Song\\midi_2\\'
     path2 = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\'
-    for label in range(1,5):
+    for label in range(1,2):
         Perf_Trans(path1 +'chuange1.midi', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 
-                    path1 + 'trans_chuange1_' + str(label) + '.midi', label)
-        Perf_Trans(path1 + 'chuange2.midi', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 'trans_chuange2_' + str(label) + '.midi', label)
-        Perf_Trans(path1 + 'EtudeN01inC_M_op10.midi', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 'trans_EtudeN01inC_M_op10_' + str(label) + '.midi', label)
-        Perf_Trans(path1 + 'PerludesAndFuguesIX_E_M.midi', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 'trans_PerludesAndFuguesIX_E_M_' + str(label) + '.midi', label)
+                    path1 + 'transP_chuange1_' + str(label) + '.midi', label)
+        # Perf_Trans(path1 + 'chuange2.midi', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 
+        #             'trans_chuange2_' + str(label) + '.midi', label)
+        # Perf_Trans(path1 + 'EtudeN01inC_M_op10.midi', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 
+        #             'trans_EtudeN01inC_M_op10_' + str(label) + '.midi', label)
+        # Perf_Trans(path1 + 'PerludesAndFuguesIX_E_M.midi', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 
+        #             'trans_PerludesAndFuguesIX_E_M_' + str(label) + '.midi', label)
 
 
 if __name__ == "__main__":

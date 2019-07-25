@@ -51,7 +51,7 @@ def v_trans(pitch, velocity, dur):
     return vstar
 
 def trans2level(d_data, v_data):
-    return int(d_data // 0.25), int(v_data // 8)
+    return int(d_data // 0.25), int(v_data // 17)
 
 def vt_trans(track):
     for i in range(len(track)):
