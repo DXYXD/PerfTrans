@@ -181,7 +181,8 @@ def PETA3(data, E, s1m, s1M, s2m, s2M, fn_out): #data is a MIDI instrument
     #piano = pm.PrettyMIDI()
     
     # read the existing data dictionary
-    sample_data = create_data_frame('pedal_testing_data.xlsx')
+    path = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\'
+    sample_data = create_data_frame(path + 'pedal_testing_data.xlsx')
     # an array collects all controls in one pedal-down movement
     all_pedal_movement = get_all_pedal_movement(data, s2m)
     p_to_be_modi = []

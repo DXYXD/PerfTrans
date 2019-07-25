@@ -47,6 +47,7 @@ class CSrelationship:
 
 # Computing decibel by time window with length t
 # Average intensity of the ﬁrst phase of decay from the peak
+
     def compute_db(self, t):
         self.decibel = []
         for i in self.frame:
@@ -69,20 +70,22 @@ class CSrelationship:
                 tp = np.sqrt(np.var((self.frame[i][j*length:j*length+length])))
             self.delay.append(float(j)/100)
 
+
     def transformation(self):
         self.db = np.array(self.decibel)
-        self.db.shape = (88,16,4)
-            
+        self.db.shape = (88,17,4)
+
+           
     def interpolation(self, note, duration, figure):
-        x = np.linspace(7, 127, 16)
+        x = np.array(list(range(1, 127, 8)) + [127])
         self.transformation()      
         y = self.db[note, :, duration]
         y = (y-min(y))/(max(y)-min(y))
         self.f = interp1d(x, y, kind='cubic')
         self.fl = interp1d(x, y, kind='linear')
  
-        xnew = np.linspace(8, 127, num=100, endpoint=True)
-        if figure ==1:
+        xnew = np.linspace(1, 127, num=100, endpoint=True)
+        if figure == 1:
             plt.plot(xnew,self.fl(xnew),'--')
             plt.xlabel('velocity')
             plt.ylabel('Loudness(db)')
@@ -91,18 +94,14 @@ class CSrelationship:
     
     def time_inter(self, note, velocity):
         self.dl = np.array(self.delay)
-        self.dl.shape=(88,16,4)
-        x = [.02, .15, .3, .7]
-        if note > 87:
-            note = 87
+        self.dl.shape=(88,17,4)
+        x = [0.1, 0.3, 0.5, 1]
         y = self.dl[note,velocity,:]
         self.ft = interp1d(x, y, kind='linear')
 
     # omit p2p
 
-
-
-if __name__ == "__main__":
+def main():
     os.chdir('D:\\Academic_work\\02_pianoTransfer\\codes\\Analysis_Audi')    
     st = [16, 26, 5, 17]
     diff1 = [27500, 25000, 28000, 7000]
@@ -126,4 +125,9 @@ if __name__ == "__main__":
     names = ['so1db(lab)', 'so3db(audio)', 'so1delay(lab)', 'so3delay(audio)']
     data = np.array([so1.decibel, so2.decibel, so1.delay, so2.delay]).T
     df=pd.DataFrame(columns=names,data=data)
-    df.to_csv('anal2.csv',encoding='utf-8')
+    df.to_csv('anal2.csv', encoding='utf-8')
+
+
+# if __name__ == "__main__":
+#     main()
+

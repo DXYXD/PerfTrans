@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Jun 19 17:21:32 2019
-
-@author: verasun
-"""
 
 import pretty_midi as pm
-import os
+# import os
 import peta_testing
 import algorithm
 
@@ -41,7 +36,7 @@ def Perf_Trans(filename, csv_file, E, s1m, s1M, s2m, s2M, fn_out, label):
     after_extend = note_extension(original_data, s1m)
     after_trans = note_trans(after_extend, csv_file)
     after_PETA = pedal_trans(after_trans, E, s1m, s1M, s2m, s2M, fn_out, label)
-    
+
     original_data.instruments[0] = after_PETA
     original_data.write(fn_out)
     return after_PETA
@@ -49,11 +44,39 @@ def Perf_Trans(filename, csv_file, E, s1m, s1M, s2m, s2M, fn_out, label):
 
 # Perf_Trans('try.midi', 'anal.csv', 0, 60, 70, 53, 62, 'after_trans_try.midi')
 
-if __name__ == "__main__":
-    os.chdir('D:\\Academic_work\\music\\experiment\\20190704')
+def main():
+    # path_1 = 'D:\\Academic_work\\00PerfTransfer\\Song\\midi_1\\standard\\'
+    # path_2 = 'D:\\Academic_work\\00PerfTransfer\\Song\\midi_1\\experiments\\'
+    # path_3 = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\'
+    # path_4 = 'D:\\Academic_work\\00PerfTransfer\\Song\\midi_1\\transfer\\'
+    # n = 6
+
+    # for i in range(1,9):
+    #     name1 = str(i) + '-s'
+    #     path1 = path_1 + name1 + '.midi'
+    #     for label in range(1,5):
+    #         Perf_Trans(path1, path_3 + 'anal_new.csv', 0, 60, 70, 53, 62, 
+    #             path_4 + 'A2L-' + name1 + '-'+ str(label) + '.midi', label)
+    #     if i == 8:
+    #         n = 4
+    #     for j in range(1,n):
+    #         for k in ['audi', 'lab']:
+    #             name2 = str(i) + '-' + str(j) + '-' + k
+    #             path2 = path_2 + name2 + '.midi'
+    #             for label in range(1,5):
+    #                 Perf_Trans(path2, path_3 + 'anal_new.csv', 0, 60, 70, 53, 62,
+    #                             path_4 + 'L2A-' + name2 + '-' + str(label) + '.midi', label)
+
+    path1 = 'D:\\Academic_work\\00PerfTransfer\\Song\\midi_2\\'
+    path2 = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\'
     for label in range(1,5):
-        Perf_Trans('chuange1.midi', 'anal.csv', 0, 60, 70, 53, 62, 'trans_chuange1_' + str(label) + '.midi', label)
-        Perf_Trans('chuange2.midi', 'anal.csv', 0, 60, 70, 53, 62, 'trans_chuange2_' + str(label) + '.midi', label)
-        Perf_Trans('EtudeN01inC_M_op10.midi', 'anal.csv', 0, 60, 70, 53, 62, 'trans_EtudeN01inC_M_op10_' + str(label) + '.midi', label)
-        Perf_Trans('PerludesAndFuguesIX_E_M.midi', 'anal.csv', 0, 60, 70, 53, 62, 'trans_PerludesAndFuguesIX_E_M_' + str(label) + '.midi', label)
+        Perf_Trans(path1 +'chuange1.midi', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 
+                    path1 + 'trans_chuange1_' + str(label) + '.midi', label)
+        Perf_Trans(path1 + 'chuange2.midi', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 'trans_chuange2_' + str(label) + '.midi', label)
+        Perf_Trans(path1 + 'EtudeN01inC_M_op10.midi', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 'trans_EtudeN01inC_M_op10_' + str(label) + '.midi', label)
+        Perf_Trans(path1 + 'PerludesAndFuguesIX_E_M.midi', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 'trans_PerludesAndFuguesIX_E_M_' + str(label) + '.midi', label)
+
+
+if __name__ == "__main__":
+    main()
 
