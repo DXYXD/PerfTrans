@@ -71,20 +71,20 @@ class CSrelationship:
             self.delay.append(float(j)/100)
 
 
-    def transformation(self):
+    def transformation(self, dur_range, vel_range):
         self.db = np.array(self.decibel)
-        self.db.shape = (88,17,4)
+        self.db.shape = (88,len(vel_range),len(dur_range))
 
            
-    def interpolation(self, note, duration, figure):
-        x = np.array(list(range(1, 127, 8)) + [127])
-        self.transformation()      
+    def interpolation(self, note, duration, figure, dur_range, vel_range):
+        x = vel_range
+        self.transformation(dur_range, vel_range)
         y = self.db[note, :, duration]
         y = (y-min(y))/(max(y)-min(y))
         self.f = interp1d(x, y, kind='cubic')
         self.fl = interp1d(x, y, kind='linear')
  
-        xnew = np.linspace(1, 127, num=100, endpoint=True)
+        xnew = np.linspace(min(vel_range), max(vel_range), num=100, endpoint=True)
         if figure == 1:
             plt.plot(xnew,self.fl(xnew),'--')
             plt.xlabel('velocity')
@@ -92,10 +92,10 @@ class CSrelationship:
             plt.show()
         
     
-    def time_inter(self, note, velocity):
+    def time_inter(self, note, velocity, dur_range, vel_range):
         self.dl = np.array(self.delay)
-        self.dl.shape=(88,17,4)
-        x = [0.1, 0.3, 0.5, 1]
+        self.dl.shape=(88,len(vel_range),len(dur_range))
+        x = dur_range
         y = self.dl[note,velocity,:]
         self.ft = interp1d(x, y, kind='linear')
 

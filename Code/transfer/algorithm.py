@@ -6,112 +6,105 @@ import os
 from analysis import CSrelationship
 
 
-def t_trans(pitch, velocity, dur):
-    if dur >= 1:
-        dur = 0.99
-    d, v = trans2level(dur, velocity) 
+def t_trans(pitch, velocity, dur, dur_range, vel_range):
+    dd = dur
+    if dur >= max(dur_range):
+        dur = max(dur_range) - 0.01
+    d, v = trans2level(dur, velocity, dur_range, vel_range) 
 
-    so1.time_inter(pitch, v)
-    so2.time_inter(pitch, v)
+    so1.time_inter(pitch, v, dur_range, vel_range)
+    so2.time_inter(pitch, v, dur_range, vel_range)
 
-    x = [.1, .3, .7, 1]
-    if dur < min(x):
-        dur = min(x)
-    elif dur > max(x):
-        dur = max(x)
+    x = dur_range
+    if dd < min(x) or dd > max(x):
+        return dd
+    else:
+        s0 = so1.ft(dd)
+        t1 = np.linspace(min(dur_range), max(dur_range), 50)
+        s1 = so2.ft(t1)
+        diff = np.abs(s1-s0)
+        tstar = np.where(diff==min(diff))[-1]
+        return t1[tstar][-1]
 
-    s0 = so1.ft(dur)
-    t1 = np.linspace(0.1,1,50)
-    s1 = so2.ft(t1)
-    diff = np.abs(s1-s0)
-    tstar = np.where(diff==min(diff))[-1]
 
-    return t1[tstar][-1]
+def v_trans(pitch, velocity, dur, dur_range, vel_range):
+    if dur >= max(dur_range):
+        dur = max(dur_range) - 0.01
+    d, v = trans2level(dur, velocity, dur_range, vel_range) 
 
-def v_trans(pitch, velocity, dur):
-    if dur >= 1:
-        dur = 0.99
-    d, v = trans2level(dur, velocity) 
+    so1.interpolation(pitch, d, 0, dur_range, vel_range)
+    so2.interpolation(pitch, d, 0, dur_range, vel_range)
 
-    so1.interpolation(pitch, d, 0)
-    so2.interpolation(pitch, d, 0)
+    x = np.array(vel_range)
+    if velocity < min(x) or velocity >= max(x):
+        return velocity
+    else:
+        s0 = so1.fl(velocity)
+        v1 = np.linspace(min(vel_range), max(vel_range), 120)
+        s1 = so2.fl(v1)
+        diff = np.abs(s1-s0)
+        vstar = np.where(diff==min(diff))[0] + 8
+        return vstar
 
-    x = np.array(list(np.linspace(1, 127, 8)) + [127])
-    if velocity < min(x):
-        velocity = min(x)
-    elif velocity > max(x):
-        velocity = max(x)
 
-    s0 = so1.fl(velocity)
-    v1 = np.linspace(1, 127, 120)
-    s1 = so2.fl(v1)
-    diff = np.abs(s1-s0)
-    vstar = np.where(diff==min(diff))[0] + 8
-    
-    return vstar
+def trans2level(d_data, v_data, dur_range, vel_range):
+    diff = vel_range[1]-vel_range[0]
+    return int(round(d_data // (max(dur_range)/len(dur_range)))), int(round(v_data // diff))
 
-def trans2level(d_data, v_data):
-    return int(d_data // 0.25), int(v_data // 17)
 
-def vt_trans(track):
+def vt_trans(track, dur_range, vel_range):
+    notes = [{'pitch': track[i].pitch, 'start': track[i].start, 'end': track[i].end, 'velocity': track[i].velocity} for i in range(len(track))]
+
     for i in range(len(track)):
-        n = track[i]
-        dur = n.end-n.start
-        v = n.velocity
-        p = n.pitch - 21
-        track[i].velocity = np.int(v_trans(p, v, dur)[-1])
-    
+        n = notes[i]
+        dur = n['end']-n['start']
+        v = n['velocity']
+        p = n['pitch'] - 21
+        notes[i]['velocity'] = np.int(v_trans(p, v, dur, dur_range, vel_range)[-1])
+        notes[i]['end'] = track[i].start + t_trans(p, v, dur, dur_range, vel_range)
+
     for i in range(len(track)):
-        n = track[i]
-        dur = n.end-n.start
-        v = n.velocity
-        p = n.pitch - 21
-        track[i].end = track[i].start + t_trans(p, v, dur)
+        track[i].pitch = notes[i]['pitch']
+        track[i].start = notes[i]['start']
+        track[i].velocity = notes[i]['velocity']
+        track[i].end = notes[i]['end']
 
     return track
 
 
-def exe(midi_data, csv_file):
+def exe(midi_data, csv_file, dur_range, vel_range, transdir):
 
-    # '''
-    # 1. Audi to Lab
-    # '''
+    global so1
+    global so2 
 
-    # df = pd.read_csv(csv_file)
-    # global so1 
-    # so1 = CSrelationship(y=1, sr=1)
-    # global so2
-    # so2 = CSrelationship(y=2, sr=2)
-    # so2.decibel = df['db(lab)']
-    # so1.decibel = df['db(audi)']
-    # so2.delay = df['duration(lab)']
-    # so1.delay = df['duration(audi)']
-    # s1 = np.array(so1.decibel)
-    # s1.shape=[88,17,4]
-    # s2 = np.array(so2.decibel)
-    # s2.shape=[88,17,4]
-    # track = midi_data.notes
-    # midi_data.notes = vt_trans(track)
-
-    '''
-    2. Lab to Audi
-    '''
-
-    df = pd.read_csv(csv_file)
-    global so1 
-    so1 = CSrelationship(y=1, sr=1)
-    global so2
-    so2 = CSrelationship(y=2, sr=2)
-    so1.decibel = df['db(lab)']
-    so2.decibel = df['db(audi)']
-    so1.delay = df['duration(lab)']
-    so2.delay = df['duration(audi)']
-    s1 = np.array(so1.decibel)
-    s1.shape=[88,17,4]
-    s2 = np.array(so2.decibel)
-    s2.shape=[88,17,4]
-    track = midi_data.notes
-    midi_data.notes = vt_trans(track)
+    if transdir == 0:
+        df = pd.read_csv(csv_file)
+        so1 = CSrelationship(y=1, sr=1)
+        so2 = CSrelationship(y=2, sr=2)
+        so2.decibel = df['db(lab)']
+        so1.decibel = df['db(audi)']
+        so2.delay = df['duration(lab)']
+        so1.delay = df['duration(audi)']
+        s1 = np.array(so1.decibel)
+        s1.shape=[88,len(vel_range),len(dur_range)]
+        s2 = np.array(so2.decibel)
+        s2.shape=[88,len(vel_range),len(dur_range)]
+        track = midi_data.notes
+        midi_data.notes = vt_trans(track, dur_range, vel_range)
+    elif transdir == 1:
+        df = pd.read_csv(csv_file)
+        so1 = CSrelationship(y=1, sr=1)
+        so2 = CSrelationship(y=2, sr=2)
+        so1.decibel = df['db(lab)']
+        so2.decibel = df['db(audi)']
+        so1.delay = df['duration(lab)']
+        so2.delay = df['duration(audi)']
+        s1 = np.array(so1.decibel)
+        s1.shape=[88,len(vel_range),len(dur_range)]
+        s2 = np.array(so2.decibel)
+        s2.shape=[88,len(vel_range),len(dur_range)]
+        track = midi_data.notes
+        midi_data.notes = vt_trans(track, dur_range, vel_range)
 
     return midi_data
 
@@ -122,4 +115,5 @@ def main():
 
 # if __name__ == "__main__":
 #     main()
+
 

@@ -79,8 +79,6 @@ def get_all_pedal_movement(data, s1m):
     start_time = False 
     end_time = False
     i = 0
-    # data = data.instruments[0]
-    # print(data.instruments[0])
     # an index token loop through control array    
     while i <= len(data.control_changes)-1: 
 
@@ -98,18 +96,12 @@ def get_all_pedal_movement(data, s1m):
             else:
                 end_i = i
                 all_move.append(data.control_changes[start_i:end_i+1])
-                #for k in all_move:
-                    #print(2, i)
-                #print()
                 break
         elif data.control_changes[i].value < s1m and start_time != False and end_time == False:
             # the last control (pedal up movement)
             end_time = data.control_changes[i].time
             end_i = i
             all_move.append(data.control_changes[start_i:end_i+1])
-            #for k in all_move:
-                #print(1, k)
-            #print()
             start_time = False
             end_time = False
             i+=1
@@ -137,8 +129,6 @@ def PETA1(data, s1m, fn_out):
             
     for c in data.control_changes:
         c.value = 0
-    #piano.instruments.append(data)
-    #piano.write(fn_out)
     return data
                 
 def trans1(data, s1m):
@@ -178,7 +168,7 @@ def PETA2(data, s1m, s1M, s2m, s2M, fn_out):
 def PETA3(data, E, s1m, s1M, s2m, s2M, fn_out): #data is a MIDI instrument
     # E is E2, the objective environment
     # create a pm object
-    #piano = pm.PrettyMIDI()
+    # piano = pm.PrettyMIDI()
     
     # read the existing data dictionary
     path = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\'
@@ -249,8 +239,6 @@ def PETA3(data, E, s1m, s1M, s2m, s2M, fn_out): #data is a MIDI instrument
                 pedal.value = 127
 
         
-    #piano.instruments.append(data)
-    #piano.write(fn_out)
     return data
 
 def PETA4(data, fn_out):
