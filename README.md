@@ -2,6 +2,23 @@
 
 summer research
 
+## 7/25/2019
+### Reported
+1. Compute variance and mean of notes' duration and velocity. This is for detecting the differences of performance among different people.
+2. The new csv data file, new transferred midi files
+3. Modified match algorithm and matched midi files 
+
+### New Staff
+1. Integrate information of notes' duration and velocity(people's performance):
+- Meta-data
+- Enrich the information conveyed by features of data
+2. In sight of new records
+- Compare durations of Lab with that of Audi
+- Compute decibels' differences
+- Compute durations' envelope
+- Observe abnormal situations of transferred midi file: problems, reasons and solutions
+
+
 ## 7/12/2019
 ### Reported
 1. Created piece relations
