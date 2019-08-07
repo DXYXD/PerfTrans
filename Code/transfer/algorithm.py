@@ -2,7 +2,6 @@
 
 import numpy as np 
 import pandas as pd 
-import os
 from analysis import CSrelationship
 
 
@@ -32,8 +31,8 @@ def v_trans(pitch, velocity, dur, dur_range, vel_range):
         dur = max(dur_range) - 0.01
     d, v = trans2level(dur, velocity, dur_range, vel_range) 
 
-    so1.interpolation(pitch, d, 0, dur_range, vel_range)
-    so2.interpolation(pitch, d, 0, dur_range, vel_range)
+    so1.interpolation(pitch, d, dur_range, vel_range)
+    so2.interpolation(pitch, d, dur_range, vel_range)
 
     x = np.array(vel_range)
     if velocity < min(x) or velocity >= max(x):
@@ -108,12 +107,5 @@ def exe(midi_data, csv_file, dur_range, vel_range, transdir):
 
     return midi_data
 
-
-def main():
-    path = 'D:\\Academic_work\\00PerfTransfer\\File\\csv' 
-    exe('chuange1.midi', path + 'anal_new.csv')
-
-# if __name__ == "__main__":
-#     main()
 
 

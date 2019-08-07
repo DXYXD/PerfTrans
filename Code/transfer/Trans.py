@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import pretty_midi as pm
-import numpy as np
 import peta_testing
 import algorithm
 
@@ -74,7 +73,7 @@ def main():
     vel_range = list(range(1, 127, 8)) + [127] # new
     transdir = 0  # 0 audi to lab, 1 lab to audi
     # dur_range = [.02, .15, .3, .7] # old
-    # vel_range = list(np.linspace(7, 127, 16)) # old
+    # vel_range = list(range(7, 128, 8)) # old
 
     for label in range(1,5):
         Perf_Trans(path1 +'chuange1.mid', path2 + 'anal_new.csv', 0, 60, 70, 53, 62, 
