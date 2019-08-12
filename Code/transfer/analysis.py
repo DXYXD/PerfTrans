@@ -22,7 +22,6 @@ class CSrelationship:
         self.transformation(dur_range, vel_range)
         y = self.db[note, :, duration]
         y = (y-min(y))/(max(y)-min(y))
-        self.f = interp1d(x, y, kind='cubic')
         self.fl = interp1d(x, y, kind='linear')
 
     

@@ -110,9 +110,7 @@ def get_all_pedal_movement(data, s1m):
             
     return all_move
 
-def PETA1(data, s1m, fn_out):
-    # create a pm object
-    piano = pm.PrettyMIDI()
+def PETA1(data, s1m):
     all_pedal_movement = get_all_pedal_movement(data, s1m)
     for pdm in all_pedal_movement:
         start_time = pdm[0].time
@@ -147,9 +145,7 @@ def trans1(data, s1m):
                 break
     return data
 
-def PETA2(data, s1m, s1M, s2m, s2M, fn_out):
-    # create a pm object
-    piano = pm.PrettyMIDI()
+def PETA2(data, s1m, s1M, s2m, s2M):
 
     for pedal in data.control_changes:
         # in case value1 is negative
@@ -160,19 +156,14 @@ def PETA2(data, s1m, s1M, s2m, s2M, fn_out):
             # in case value1 is greater than 127
             pedal.value = 127
         
-    piano.instruments.append(data)
-    piano.write(fn_out)
     return data
     
         
-def PETA3(data, E, s1m, s1M, s2m, s2M, fn_out): #data is a MIDI instrument
+def PETA3(data, E, s1m, s1M, s2m, s2M, pedal_file): #data is a MIDI instrument
     # E is E2, the objective environment
-    # create a pm object
-    # piano = pm.PrettyMIDI()
     
     # read the existing data dictionary
-    path = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\'
-    sample_data = create_data_frame(path + 'pedal_testing_data.xlsx')
+    sample_data = create_data_frame(pedal_file)
     # an array collects all controls in one pedal-down movement
     all_pedal_movement = get_all_pedal_movement(data, s2m)
     p_to_be_modi = []
@@ -241,10 +232,8 @@ def PETA3(data, E, s1m, s1M, s2m, s2M, fn_out): #data is a MIDI instrument
         
     return data
 
-def PETA4(data, fn_out):
-    piano = pm.PrettyMIDI()
-    piano.instruments.append(data)
-    piano.write(fn_out)
+def PETA4(data):
+    
     return data
     
 
