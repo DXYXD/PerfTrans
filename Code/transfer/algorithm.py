@@ -1,65 +1,61 @@
-# python 3.7.1
-
 import numpy as np 
 import pandas as pd 
-from analysis import CSrelationship
+from scipy.interpolate import griddata
+
+def cal_ID(modep, v, d, vel_range, dur_range):
+    x0 = np.array([[d, v] for v in vel_range for d in dur_range])
+    value_v = modep.flatten()
+ 
+    result = griddata(x0, value_v, (d, v), method='linear')
+
+    return result
 
 
-def t_trans(pitch, velocity, dur, dur_range, vel_range):
-    dd = dur
-    if dur >= max(dur_range):
-        dur = max(dur_range) - 0.01
-    d, v = trans2level(dur, velocity, dur_range, vel_range) 
+def ser_vd(modev, moded, I0, D0, vel_range, dur_range):
+    x0 = np.array([[d, v] for v in vel_range for d in dur_range])
+    value_v = modev.flatten()
+    value_d = moded.flatten() 
 
-    so1.time_inter(pitch, v, dur_range, vel_range)
-    so2.time_inter(pitch, v, dur_range, vel_range)
+    xt = np.linspace(0.1, 1, 100)
+    yt = np.linspace(1,127,127)
+    x, y = np.meshgrid(xt, yt)
+    result_v = griddata(x0, value_v, (x, y), method='linear') - I0
+    result_d = griddata(x0, value_d, (x, y), method='linear') - D0
 
-    if dd < min(dur_range) or dd > max(dur_range):
-        return dd
-    else:
-        s0 = so1.ft(dd) 
-        t1 = np.linspace(min(dur_range), max(dur_range), 50)
-        s1 = so2.ft(t1)
-        diff = np.abs(s1-s0)
-        tstar = np.where(diff==min(diff))[-1]
+    diff = abs(result_v) + abs(result_d)
+    coordinate = np.where(diff==np.min(diff))
+    v_h = coordinate[0][0]
+    d_h = xt[coordinate[1][0]]
 
-        return t1[tstar][-1]
+    return (v_h, d_h)
 
 
-def v_trans(pitch, velocity, dur, dur_range, vel_range):
-    if dur >= max(dur_range):
-        dur = max(dur_range) - 0.01
-    d, v = trans2level(dur, velocity, dur_range, vel_range) 
-
-    so1.interpolation(pitch, d, dur_range, vel_range)
-    so2.interpolation(pitch, d, dur_range, vel_range)
-
-    if velocity < min(vel_range) or velocity >= max(vel_range):
-        return velocity
-    else:
-        s0 = so1.fl(velocity)
-        v1 = np.linspace(min(vel_range), max(vel_range), 120)
-        s1 = so2.fl(v1)
-        diff = np.abs(s1-s0)
-        vstar = np.where(diff==min(diff))[0] + 8
-        return vstar
-
-
-def trans2level(d_data, v_data, dur_range, vel_range):
-    diff = vel_range[1]-vel_range[0]
-    return int(round(d_data // (max(dur_range)/len(dur_range)))), int(round(v_data // diff))
-
-
-def vt_trans(track, dur_range, vel_range):
+def vt_trans(track, mode1db, mode2db, mode1dur, mode2dur, dur_range, vel_range):
     notes = [{'pitch': track[i].pitch, 'start': track[i].start, 'end': track[i].end, 'velocity': track[i].velocity} for i in range(len(track))]
 
     for i in range(len(track)):
         n = notes[i]
-        dur = n['end']-n['start']
+        d = n['end']-n['start']
         v = n['velocity']
         p = n['pitch'] - 21
-        notes[i]['velocity'] = np.int(v_trans(p, v, dur, dur_range, vel_range)[-1])
-        notes[i]['end'] = track[i].start + t_trans(p, notes[i]['velocity'], dur, dur_range, vel_range)
+        
+        if d <= max(dur_range) and d >= min(dur_range):
+            I0 = cal_ID(mode1db[p,:,:], v, d, vel_range, dur_range)
+            D0 = cal_ID(mode1dur[p,:,:], v, d, vel_range, dur_range)
+
+            result = ser_vd(mode2db[p,:,:], mode2dur[p,:,:], I0, D0, vel_range, dur_range)
+
+            v_h = result[0]
+            d_h = result[1]
+            # print('v', v, 'I0',I0)
+            print('diff-v:', v_h-v, 'rate:', round(abs(v_h-v)/127, 4))
+            # print('diff-d:', round(abs(d_h-d),4), 'rate:', round(abs(d_h-d)/1, 4))
+        else:
+            v_h = v
+            d_h = d
+
+        notes[i]['velocity'] = v_h
+        notes[i]['end'] = track[i].start + d_h
 
     for i in range(len(track)):
         track[i].pitch = notes[i]['pitch']
@@ -72,41 +68,22 @@ def vt_trans(track, dur_range, vel_range):
 
 def exe(midi_data, csv_file, dur_range, vel_range, transdir):
 
-    global so1
-    global so2 
-
+    df = pd.read_csv(csv_file)
+    df = df.sort_values(by=['pitch','vel','dur'])
+    track = midi_data.notes
+    
+    # 0 audi to lab, 1 lab to audi
     if transdir == 0:
-        df = pd.read_csv(csv_file)
-        df = df.sort_values(by=['pitch','vel','dur'])
-        so1 = CSrelationship(y=1, sr=1)
-        so2 = CSrelationship(y=2, sr=2)
-        so2.decibel = df['db(lab)']
-        so1.decibel = df['db(audi)']
-        so2.delay = df['duration(lab)']
-        so1.delay = df['duration(audi)']
-        s1 = np.array(so1.decibel)
-        s1.shape=[88,len(vel_range),len(dur_range)]
-        s2 = np.array(so2.decibel)
-        s2.shape=[88,len(vel_range),len(dur_range)]
-        track = midi_data.notes
-        midi_data.notes = vt_trans(track, dur_range, vel_range)
-    elif transdir == 1:
-        df = pd.read_csv(csv_file)
-        df = df.sort_values(by=['pitch','vel','dur'])
-        so1 = CSrelationship(y=1, sr=1)
-        so2 = CSrelationship(y=2, sr=2)
-        so1.decibel = df['db(lab)']
-        so2.decibel = df['db(audi)']
-        so1.delay = df['duration(lab)']
-        so2.delay = df['duration(audi)']
-        s1 = np.array(so1.decibel)
-        s1.shape=[88,len(vel_range),len(dur_range)]
-        s2 = np.array(so2.decibel)
-        s2.shape=[88,len(vel_range),len(dur_range)]
-        track = midi_data.notes
-        midi_data.notes = vt_trans(track, dur_range, vel_range)
+        mode1db = np.array(df['db(audi)']).reshape(88, len(vel_range), len(dur_range))                  
+        mode1dur = np.array(df['duration(audi)']).reshape(88, len(vel_range), len(dur_range))
+        mode2db = np.array(df['db(lab)']).reshape(88, len(vel_range), len(dur_range))
+        mode2dur = np.array(df['duration(lab)']).reshape(88, len(vel_range), len(dur_range))
+    if transdir == 1:
+        mode1db = np.array(df['db(lab)']).reshape(88, len(vel_range), len(dur_range))
+        mode1dur = np.array(df['duration(lab)']).reshape(88, len(vel_range), len(dur_range))
+        mode2db = np.array(df['db(audi)']).reshape(88, len(vel_range), len(dur_range))
+        mode2dur = np.array(df['duration(lab)']).reshape(88, len(vel_range), len(dur_range))
+    
+    midi_data.notes = vt_trans(track, mode1db, mode2db, mode1dur, mode2dur, dur_range, vel_range)
 
     return midi_data
-
-
-

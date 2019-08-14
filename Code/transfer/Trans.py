@@ -4,6 +4,7 @@
 import pretty_midi as pm
 import peta_testing
 import algorithm
+from midi_fix import fix_instrument
 
 
 def note_extension(data, s1m):
@@ -33,15 +34,14 @@ def Perf_Trans(filename, csv_file, E, s1m, s1M, s2m, s2M, fn_out, label, dur_ran
     original_data = pm.PrettyMIDI(filename)
     after_extend = note_extension(original_data, s1m)
     after_trans = note_trans(after_extend, csv_file, dur_range, vel_range, transdir)
-    # after_trans = note_trans(original_data.instruments[0], csv_file, dur_range, vel_range, transdir)
     if label == 1:
         for pedal in after_trans.control_changes:
             pedal.value = 0
-        original_data.instruments[0] = after_trans
+        original_data.instruments[0] = fix_instrument(after_trans)
         original_data.write(fn_out)
     else:
         after_PETA = pedal_trans(after_trans, E, s1m, s1M, s2m, s2M, label, pedal_file)
-        original_data.instruments[0] = after_PETA 
+        original_data.instruments[0] = fix_instrument(after_PETA) 
         original_data.write(fn_out)
 
     return original_data
@@ -60,9 +60,9 @@ def test(original_mid_path, mid_file, csv_file, save_mid_path, transdir, pedal_f
     dur_range = [0.1,0.3,0.7,1] # new
     vel_range = list(range(1, 127, 8)) + [127] # new
 
-    for label in range(1,5):
+    for label in range(1,2):
         Perf_Trans(original_mid_path + mid_file, csv_file, 0, 60, 70, 53, 62, 
-                    save_mid_path + prefix + name + 'test-extend-' +str(label) + '.mid', label, dur_range, vel_range, 
+                    save_mid_path + prefix + name +str(label) + '.mid', label, dur_range, vel_range, 
                     transdir, pedal_file)
 
     return 0

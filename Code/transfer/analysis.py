@@ -31,4 +31,5 @@ class CSrelationship:
         x = dur_range
         y = self.dl[note,velocity,:]
         self.ft = interp1d(x, y, kind='linear')
+    
 
