@@ -47,8 +47,7 @@ def vt_trans(track, mode1db, mode2db, mode1dur, mode2dur, dur_range, vel_range):
 
             v_h = result[0]
             d_h = result[1]
-            # print('v', v, 'I0',I0)
-            print('diff-v:', v_h-v, 'rate:', round(abs(v_h-v)/127, 4))
+            # print('diff-v:', v_h-v, 'rate:', round(abs(v_h-v)/127, 4))
             # print('diff-d:', round(abs(d_h-d),4), 'rate:', round(abs(d_h-d)/1, 4))
         else:
             v_h = v

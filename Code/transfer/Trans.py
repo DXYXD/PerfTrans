@@ -2,15 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import pretty_midi as pm
-import peta_testing
+import PedalTrans
 import algorithm
 from midi_fix import fix_instrument
 
-
-def note_extension(data, s1m):
-    data = data.instruments[0]
-    new_data = peta_testing.trans1(data, s1m)
-    return new_data
 
 
 def note_trans(data, csv_file, dur_range, vel_range, transdir):
@@ -18,30 +13,21 @@ def note_trans(data, csv_file, dur_range, vel_range, transdir):
     return new_data
 
 
-def pedal_trans(data, E, s1m, s1M, s2m, s2M, label, pedal_file):
-    if label == 1:
-        after_PETA = peta_testing.PETA1(data, s1m)
-    elif label == 2:
-        after_PETA = peta_testing.PETA2(data, s1m, s2M, s2m, s2M)
-    elif label == 3:
-        after_PETA = peta_testing.PETA3(data, E, s1m, s1M, s2m, s2M, pedal_file)
-    elif label == 4:
-        after_PETA = peta_testing.PETA4(data)
-    
-    return after_PETA
-
 def Perf_Trans(filename, csv_file, E, s1m, s1M, s2m, s2M, fn_out, label, dur_range, vel_range, transdir, pedal_file):
-    original_data = pm.PrettyMIDI(filename)
-    after_extend = note_extension(original_data, s1m)
-    after_trans = note_trans(after_extend, csv_file, dur_range, vel_range, transdir)
     if label == 1:
-        for pedal in after_trans.control_changes:
-            pedal.value = 0
-        original_data.instruments[0] = fix_instrument(after_trans)
+        original_data = pm.PrettyMIDI(filename)
+        new1 = PedalTrans.PETA1_1(original_data.instruments[0], s1m)
+        new2 = note_trans(new1, csv_file, dur_range, vel_range, transdir)
+        new3 = PedalTrans.PETA1_3(new2)
+        original_data.instruments[0] = fix_instrument(new3)
         original_data.write(fn_out)
-    else:
-        after_PETA = pedal_trans(after_trans, E, s1m, s1M, s2m, s2M, label, pedal_file)
-        original_data.instruments[0] = fix_instrument(after_PETA) 
+    elif label == 2:
+        original_data = pm.PrettyMIDI(filename)
+        pedal_dict = PedalTrans.PETA2_1(original_data.instruments[0], s1m)
+        new2 = note_trans(original_data.instruments[0], csv_file, dur_range, vel_range, transdir)
+        new3 = PedalTrans.PETA2_3(new2, pedal_dict)
+        new4 = PedalTrans.PETA2_4(new3, s1m, s1M, s2m, s2M)
+        original_data.instruments[0] = fix_instrument(new4)
         original_data.write(fn_out)
 
     return original_data
@@ -75,16 +61,31 @@ def main():
 # 如果进行test2 请将test1 注释掉
 
     # test1
-    original_mid_path = 'D:\\Academic_work\\00PerfTransfer\\Song\\midi_2\\'
-    csv_file = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\anal_new.csv'
-    save_mid_path = 'D:\\Academic_work\\00PerfTransfer\\Song\\midi_2\\'
-    pedal_file = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\pedal_testing_data.xlsx'
-    transdir = 0
-    mid_file = ['chuange1.mid']
-    test(original_mid_path, mid_file[0], csv_file, save_mid_path, transdir, pedal_file)
+    # original_mid_path = 'D:\\Academic_work\\00PerfTransfer\\Song\\midi_2\\'
+    # csv_file = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\anal_new.csv'
+    # save_mid_path = 'D:\\Academic_work\\00PerfTransfer\\Song\\midi_2\\'
+    # pedal_file = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\pedal_testing_data.xlsx'
+    # transdir = 0
+    # mid_file = ['chuange1.mid']
+    # test(original_mid_path, mid_file[0], csv_file, save_mid_path, transdir, pedal_file)
+
 
     # test2
+    original_mid_path =  'D:\\Academic_work\\00PerfTransfer\\Song\\midi_1\\experiments\\' 
+    csv_file = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\anal_new.csv'
+    save_mid_path = 'D:\\Academic_work\\00PerfTransfer\\Song\\midi_1\\transfer\\A2L\\' 
+    pedal_file = 'D:\\Academic_work\\00PerfTransfer\\File\\csv\\pedal_testing_data.xlsx'
+    transdir = 0
 
+    #seven music piecies
+    n = 6
+    for i in range(2, 9):
+        if i == 8:
+            n = 4
+        for j in range(1, n):
+            for k in ['audi']:
+                mid_name = str(i) + '-' + str(j) + '-' + k + '.midi'
+                test(original_mid_path, mid_name, csv_file, save_mid_path, transdir, pedal_file)
 
 
 
